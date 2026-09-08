@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tian Zeng — Full-stack engineer for AI-native products</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080b; --bg-2: #0c0c10;
+    --glass: rgba(255,255,255,.032); --glass-2: rgba(255,255,255,.055);
+    --line: rgba(255,255,255,.085); --line-2: rgba(255,255,255,.16);
+    --text: #f2f2f5; --text-2: #a7a7b3; --text-3: #62626e;
+    --violet: #8b8bf5; --violet-2: #a78bfa; --violet-glow: rgba(124,111,245,.35);
+    --green: #5dd4a0; --amber: #f0b153;
+    --font: "Inter", -apple-system, "PingFang SC", sans-serif;
+    --head: "Space Grotesk", "Inter", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: rgba(139,139,245,.3); }
+  a { color: inherit; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+
+  /* cursor glow */
+  #glow { position: fixed; width: 560px; height: 560px; border-radius: 50%; pointer-events: none; z-index: 0;
+    background: radial-gradient(circle, rgba(124,111,245,.09) 0%, transparent 65%);
+    transform: translate(-50%,-50%); left: 50%; top: 30%; transition: opacity .4s; }
+
+  /* entrance */
+  .rise { opacity: 0; transform: translateY(20px); }
+  .rise.in { animation: rise .9s cubic-bezier(.16,1,.3,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .d1 { animation-delay: .06s } .d2 { animation-delay: .2s } .d3 { animation-delay: .34s }
+
+  /* header */
+  header { position: sticky; top: 0; z-index: 20; background: rgba(8,8,11,.65); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .hd { display: flex; align-items: center; height: 60px; }
+  .logo { font-family: var(--head); font-weight: 600; font-size: 17px; letter-spacing: .01em; display: flex; align-items: center; gap: 9px; }
+  .logo i { width: 9px; height: 9px; border-radius: 3px; background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    box-shadow: 0 0 14px var(--violet-glow); }
+  nav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+  nav a { text-decoration: none; font-size: 13.5px; color: var(--text-2); padding: 6px 12px; border-radius: 7px; transition: all .15s; }
+  nav a:hover { color: var(--text); background: var(--glass-2); }
+  nav a.cta { color: var(--text); border: 1px solid var(--line-2); margin-left: 10px; }
+  nav a.cta:hover { border-color: var(--violet); box-shadow: 0 0 18px rgba(124,111,245,.25); }
+
+  /* hero */
+  .hero { position: relative; padding: 108px 0 96px; overflow: hidden; }
+  #particles { position: absolute; inset: 0; z-index: 0; }
+  .hero::before { content: ""; position: absolute; inset: -20% -10%; z-index: 0; pointer-events: none;
+    background: radial-gradient(48% 42% at 68% 18%, rgba(124,111,245,.16), transparent 70%),
+                radial-gradient(36% 34% at 18% 78%, rgba(167,139,250,.08), transparent 70%); }
+  .hero-inner { position: relative; z-index: 2; display: grid; grid-template-columns: 1.04fr .96fr; gap: 60px; align-items: center; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--violet);
+    display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid rgba(139,139,245,.3);
+    border-radius: 99px; background: rgba(124,111,245,.08); }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 50% { opacity: .3 } }
+  h1 { font-family: var(--head); font-weight: 600; font-size: clamp(36px, 4.6vw, 54px); line-height: 1.12; letter-spacing: -.025em; margin: 22px 0 20px; }
+  h1 .grad { background: linear-gradient(100deg, #fff 10%, var(--violet-2) 55%, var(--violet) 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero-sub { font-size: 16.5px; color: var(--text-2); max-width: 46ch; }
+  .hero-sub b { color: var(--text); font-weight: 600; }
+  .hero-cta { margin-top: 30px; display: flex; gap: 12px; }
+  .btn { font-size: 14px; font-weight: 500; text-decoration: none; border-radius: 9px; padding: 11px 20px; transition: all .18s; }
+  .btn.primary { background: linear-gradient(135deg, #7c6ff5, #9d7bf7); color: #fff; box-shadow: 0 4px 28px rgba(124,111,245,.4); }
+  .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(124,111,245,.55); }
+  .btn.ghost { border: 1px solid var(--line-2); color: var(--text-2); }
+  .btn.ghost:hover { color: var(--text); border-color: var(--violet); }
+
+  /* glass demo frame */
+  .frame { position: relative; z-index: 2; background: var(--glass); border: 1px solid var(--line); border-radius: 14px;
+    backdrop-filter: blur(12px); box-shadow: 0 40px 90px -40px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.06);
+    overflow: hidden; transform: perspective(1400px) rotateY(-4deg) rotateX(1.5deg); transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  .frame:hover { transform: perspective(1400px) rotateY(0) rotateX(0); }
+  .frame-hd { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.02); }
+  .frame-hd i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.12); }
+  .frame-hd span { margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+  .chip { margin-left: auto; font-family: var(--mono); font-size: 10.5px; padding: 3px 10px; border-radius: 99px;
+    border: 1px solid var(--line-2); color: var(--text-2); transition: all .3s; }
+  .chip.stream { color: var(--violet-2); border-color: rgba(139,139,245,.5); background: rgba(124,111,245,.12); box-shadow: 0 0 14px rgba(124,111,245,.2); }
+  .chip.lost { color: var(--amber); border-color: rgba(240,177,83,.45); background: rgba(240,177,83,.1); }
+  .chip.ok { color: var(--green); border-color: rgba(93,212,160,.45); background: rgba(93,212,160,.1); }
+  .frame-body { padding: 0; min-height: 0; position: relative; }
+  #showcase { display: block; width: 100%; height: 302px; transition: opacity .32s ease; }
+  .scene-cap { position: absolute; left: 16px; bottom: 13px; line-height: 1.5; pointer-events: none; }
+  .scene-cap b { display: block; font-family: var(--head); font-weight: 600; font-size: 13.5px; color: var(--text); }
+  .scene-cap span { color: var(--text-3); font-size: 11px; font-family: var(--mono); }
+  .dots { position: absolute; right: 14px; bottom: 16px; display: flex; gap: 7px; }
+  .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.14); cursor: pointer; transition: all .25s; }
+  .dots i.on { background: var(--violet-2); box-shadow: 0 0 9px var(--violet-glow); transform: scale(1.2); }
+  .seqlog { position: absolute; right: 14px; top: 11px; font-family: var(--mono); font-size: 10px; color: var(--text-3); text-align: right; line-height: 1.8; }
+
+  /* sections */
+  section { position: relative; z-index: 2; padding: 84px 0; border-top: 1px solid var(--line); }
+  .sec-eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--violet); }
+  .lede { font-family: var(--head); font-weight: 600; font-size: clamp(26px, 3.2vw, 36px); letter-spacing: -.02em; line-height: 1.22; margin-top: 14px; }
+  .statement { color: var(--text-2); font-size: 16.5px; max-width: 64ch; margin-top: 16px; }
+  .statement b { color: var(--text); }
+
+  .cards { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { position: relative; background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 26px 24px;
+    transition: transform .3s cubic-bezier(.16,1,.3,1), border-color .3s, box-shadow .3s; overflow: hidden; }
+  .card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s;
+    background: radial-gradient(60% 90% at 20% 0%, rgba(124,111,245,.12), transparent 70%); }
+  .card:hover { transform: translateY(-5px); border-color: rgba(139,139,245,.35); box-shadow: 0 24px 60px -30px rgba(124,111,245,.35); }
+  .card:hover::before { opacity: 1; }
+  .card .num { font-family: var(--mono); font-size: 12px; color: var(--violet); }
+  .card h3 { font-family: var(--head); font-weight: 600; font-size: 18px; margin: 10px 0 2px; }
+  .card small { font-family: var(--mono); font-size: 11px; color: var(--text-3); display: block; margin-bottom: 10px; }
+  .card p { font-size: 14px; color: var(--text-2); }
+  .card p b { color: var(--text); font-weight: 600; }
+
+  .loop { margin-top: 40px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .loop .card { padding: 22px 20px; }
+  .loop h4 { font-family: var(--head); font-weight: 600; font-size: 15.5px; margin: 10px 0 6px; }
+  .loop p { font-size: 13px; }
+
+  .stats { margin-top: 44px; display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+  .stat { border-top: 1px solid var(--line-2); padding-top: 14px; }
+  .stat .v { font-family: var(--head); font-weight: 600; font-size: clamp(26px,3vw,36px); letter-spacing: -.02em; }
+  .stat .v span { color: var(--violet-2); }
+  .stat .k { font-size: 12.5px; color: var(--text-3); margin-top: 3px; }
+
+  .terminal { margin-top: 34px; background: #0a0a0e; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
+    font-family: var(--mono); font-size: 12.5px; line-height: 2; color: var(--text-2); }
+  .terminal .p { color: var(--violet-2); }
+  .terminal .c { color: var(--text-3); }
+
+  footer { border-top: 1px solid var(--line); padding: 30px 0 44px; font-size: 12.5px; color: var(--text-3);
+    display: flex; justify-content: space-between; position: relative; z-index: 2; }
+
+  @media (max-width: 880px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .cards, .loop, .stats { grid-template-columns: 1fr 1fr; }
+    .frame { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div id="glow"></div>
+
+<header><div class="wrap hd">
+  <div class="logo"><i></i>Tian Zeng</div>
+  <nav>
+    <a href="#work">Work</a>
+    <a href="#approach">Approach</a>
+    <a href="#ai">AI Practice</a>
+    <a href="playground.html">Playground</a>
+    <a class="cta" href="mailto:18867137983@163.com">Get in touch</a>
+  </nav>
+</div></header>
+
+<div class="hero">
+  <canvas id="particles"></canvas>
+  <div class="wrap hero-inner">
+    <div>
+      <span class="eyebrow rise d1">8 years · streaming · agents · systems</span>
+      <h1 class="rise d1">Full-stack engineer for <span class="grad">AI-native</span> products.</h1>
+      <p class="hero-sub rise d2">I owned the front end and service layer of <b>GeoGPT</b> — an AI research platform in production worldwide. I build <b>streaming interfaces</b>, <b>agent experiences</b>, and the engineering systems behind them. The particle field behind this page is hand-rolled WebGL — <b>instanced points, a single draw call</b>.</p>
+      <div class="hero-cta rise d3">
+        <a class="btn primary" href="#work">See the work</a>
+        <a class="btn ghost" href="playground.html">Open playground ↗</a>
+      </div>
+    </div>
+    <div class="frame rise d3">
+      <div class="frame-hd"><i></i><i></i><i></i><span id="scene-title">01 / 04 — geoscience</span><span class="chip" id="chip">GeoGPT</span></div>
+      <div class="frame-body">
+        <canvas id="showcase"></canvas>
+        <div class="scene-cap" id="scene-cap"></div>
+        <div class="seqlog" id="seqlog"></div>
+        <div class="dots" id="dots"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="work"><div class="wrap">
+  <p class="sec-eyebrow rise">Work</p>
+  <h2 class="lede rise">One thread through eight years:<br>high-frequency data meets a human interface.</h2>
+  <div class="cards">
+    <div class="card rise"><span class="num">01</span>
+      <h3>GeoGPT · Zhejiang Lab</h3><small>2023 — now · owner, front end &amp; service layer</small>
+      <p>AI platform for geoscientists, production across two regions. Designed the <b>full/incremental streaming protocol</b> with seq-ordered frames and <b>uniqueId reconnection</b> — interrupted answers resume, retries never burn inference twice. A <b>structured rendering protocol</b> drives 20+ live components from model output.</p></div>
+    <div class="card rise"><span class="num">02</span>
+      <h3>SenseTime · Autolink</h3><small>2020 — 2022 · 3D visualization</small>
+      <p>Volume rendering of hundreds-of-MB medical imaging in the browser: chunked loading, WebWorker parsing, LOD + instancing, LRU GPU cache — <b>6s → 1.2s</b>, memory peak −30%.</p></div>
+    <div class="card rise"><span class="num">03</span>
+      <h3>Pinduoduo · Duoduo Jinbao</h3><small>2019 — 2020 · consumer scale</small>
+      <p>SSR/SSG hybrid rendering at high traffic: <b>first paint −65%</b>, TBT −70%; a non-intrusive analytics framework cut tracking code by 80%.</p></div>
+    <div class="card rise"><span class="num">04</span>
+      <h3>DiDi · Jiuxiao Engine</h3><small>2018 — 2019 · realtime maps</small>
+      <p>Thousands of vehicles live on one map — clustering, adaptive LOD, WebGL acceleration, frame-batched diff updates.</p></div>
+  </div>
+</div></section>
+
+<section id="approach"><div class="wrap">
+  <p class="sec-eyebrow rise">Approach</p>
+  <h2 class="lede rise">A system, not a single pass.</h2>
+  <div class="loop">
+    <div class="card rise"><span class="num">01</span><h4>Contract first</h4><p>Schemas as the single source of truth — tRPC + zod end to end. Docs go stale; types don't.</p></div>
+    <div class="card rise"><span class="num">02</span><h4>Design for failure</h4><p>Reconnection, idempotency, graceful stop. The network will drop; the product shouldn't.</p></div>
+    <div class="card rise"><span class="num">03</span><h4>Measure everything</h4><p>Event SDK → pipeline → dashboards. TraceIds turn debugging into querying.</p></div>
+    <div class="card rise"><span class="num">04</span><h4>Ship, then verify</h4><p>Tests gate core paths. Sentry + RUM watch what ships. Every optimization has a before/after.</p></div>
+  </div>
+  <div class="stats">
+    <div class="stat rise"><div class="v">5<span>×</span></div><div class="k">render speedup, 3D imaging</div></div>
+    <div class="stat rise"><div class="v">65<span>%</span></div><div class="k">first-paint cut at PDD scale</div></div>
+    <div class="stat rise"><div class="v">170<span>+</span></div><div class="k">deps unified in one monorepo</div></div>
+    <div class="stat rise"><div class="v">20<span>+</span></div><div class="k">component types from model output</div></div>
+  </div>
+</div></section>
+
+<section id="ai"><div class="wrap">
+  <p class="sec-eyebrow rise">AI Practice</p>
+  <h2 class="lede rise">Aggressive with AI.<br><span style="color:var(--violet-2)">Accountable</span> for its output.</h2>
+  <p class="statement rise">Claude Code is my daily driver — codebase archaeology, design docs, implementation, tests. I turned the practice into a <b>team playbook</b>: rules files that encode conventions, AI-generated unit tests, AI-first review. Hard rule from a real failure: <b>models don't see the "why" behind a constraint</b> — core paths always get tests and human eyes.</p>
+  <div class="terminal rise">
+    <div><span class="p">$</span> claude "audit 170+ dependency versions, plan the migration"</div>
+    <div><span class="c"># estimated one week · shipped in two days</span></div>
+    <div><span class="p">$</span> cat CLAUDE.md <span class="c"># conventions the whole team — human and AI — works from</span></div>
+    <div><span class="p">$</span> claude "this page, and the playground beside it" <span class="c"># built the same way</span></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <p class="sec-eyebrow rise">Build with me</p>
+  <h2 class="lede rise">Developer products are judged<br>in the first ten minutes.</h2>
+  <p class="statement rise">I like building the parts developers actually touch — consoles, streams, SDK ergonomics, and docs that don't lie.</p>
+  <div class="hero-cta rise">
+    <a class="btn primary" href="mailto:18867137983@163.com">18867137983@163.com</a>
+    <a class="btn ghost" href="tel:+8618867137983">+86 188 6713 7983</a>
+    <a class="btn ghost" href="#">WeChat · zhouday1993</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap" style="display:flex;justify-content:space-between;width:100%">
+  <span>Tian Zeng — Hangzhou, China</span>
+  <span>Hand-rolled WebGL · zero frameworks on this page · built with Claude Code</span>
+</div></footer>
+
+<script>
+/* ─── cursor glow ─── */
+const glow = document.getElementById('glow');
+addEventListener('pointermove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; }, { passive: true });
+
+/* ─── scroll reveal (IO + sweep fallback) ─── */
+const risers = [...document.querySelectorAll('.rise')];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+risers.forEach(el => io.observe(el));
+function sweep(){ risers.forEach(el => { if (!el.classList.contains('in') && el.getBoundingClientRect().top < innerHeight * 1.05) el.classList.add('in'); }); }
+addEventListener('scroll', sweep, { passive: true }); addEventListener('resize', sweep); setTimeout(sweep, 300);
+
+/* ─── WebGL particle field: 4000 points, one draw call, mouse repulsion ─── */
+(function(){
+  const cv = document.getElementById('particles');
+  const gl = cv.getContext('webgl', { alpha: true, antialias: false });
+  if (!gl) return;
+  const N = 4000;
+  let W, H, dpr, drawN = N;
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    gl.viewport(0, 0, cv.width, cv.height);
+    drawN = Math.max(500, Math.min(N, Math.round((W * H) / 620)));
+  }
+  resize(); addEventListener('resize', resize);
+  addEventListener('load', resize); if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+
+  const vsrc = `
+    attribute vec2 aPos; attribute float aSize; attribute float aHue;
+    uniform vec2 uRes; varying float vHue;
+    void main(){
+      vHue = aHue;
+      vec2 ndc = (aPos / uRes) * 2.0 - 1.0;
+      gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
+      gl_PointSize = aSize;
+    }`;
+  const fsrc = `
+    precision mediump float; varying float vHue;
+    void main(){
+      float d = length(gl_PointCoord - .5);
+      float a = smoothstep(.5, .12, d);
+      vec3 violet = vec3(.55,.55,.96); vec3 white = vec3(.92,.92,1.0);
+      gl_FragColor = vec4(mix(violet, white, vHue), a * (0.09 + vHue * 0.28));
+    }`;
+  function sh(type, src){ const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, vsrc));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fsrc));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // additive
+
+  const pos = new Float32Array(N * 2), vel = new Float32Array(N * 2);
+  const size = new Float32Array(N), hue = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    pos[i*2] = Math.random() * 2000; pos[i*2+1] = Math.random() * 1200;
+    vel[i*2] = (Math.random() - .5) * .22; vel[i*2+1] = (Math.random() - .5) * .22;
+    size[i] = (0.8 + Math.random() * 1.8) * (devicePixelRatio > 1 ? 2 : 1);
+    hue[i] = Math.random() * Math.random();
+  }
+  function buf(data, loc, comps){
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, comps, gl.FLOAT, false, 0, 0);
+    return b;
+  }
+  const locPos = gl.getAttribLocation(prog, 'aPos');
+  const bPos = buf(pos, locPos, 2);
+  buf(size, gl.getAttribLocation(prog, 'aSize'), 1);
+  buf(hue, gl.getAttribLocation(prog, 'aHue'), 1);
+  const uRes = gl.getUniformLocation(prog, 'uRes');
+
+  let mx = -9999, my = -9999;
+  cv.parentElement.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(); mx = (e.clientX - r.left) * dpr; my = (e.clientY - r.top) * dpr;
+  }, { passive: true });
+  cv.parentElement.addEventListener('pointerleave', () => { mx = my = -9999; });
+
+  function tick(){
+    const w = cv.width, h = cv.height, R = 130 * dpr;
+    for (let i = 0; i < drawN; i++) {
+      let x = pos[i*2] % w, y = pos[i*2+1] % h;
+      if (x < 0) x += w; if (y < 0) y += h;
+      const dx = x - mx, dy = y - my, d2 = dx*dx + dy*dy;
+      if (d2 < R*R && d2 > 1) {
+        const f = (1 - Math.sqrt(d2)/R) * .9;
+        vel[i*2] += (dx/Math.sqrt(d2)) * f; vel[i*2+1] += (dy/Math.sqrt(d2)) * f;
+      }
+      vel[i*2] *= .96; vel[i*2+1] *= .96;
+      const sp = Math.hypot(vel[i*2], vel[i*2+1]);
+      if (sp < .12) { vel[i*2] += (Math.random()-.5)*.04; vel[i*2+1] += (Math.random()-.5)*.04; }
+      pos[i*2] = x + vel[i*2] * dpr; pos[i*2+1] = y + vel[i*2+1] * dpr;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, bPos);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, pos);
+    gl.enableVertexAttribArray(locPos); gl.vertexAttribPointer(locPos, 2, gl.FLOAT, false, 0, 0);
+    gl.uniform2f(uRes, w, h);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, drawN);
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ─── career showcase: 4 WebGL scenes, one shared point pipeline, one draw call/frame ─── */
+(function(){
+  const cv = document.getElementById('showcase');
+  const gl = cv.getContext('webgl', { alpha: true, antialias: false });
+  if (!gl) return;
+  const chip = document.getElementById('chip'), sTitle = document.getElementById('scene-title'),
+        cap = document.getElementById('scene-cap'), seqlog = document.getElementById('seqlog'),
+        dotsEl = document.getElementById('dots');
+
+  let W, H, dpr;
+  function resize(){
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    gl.viewport(0, 0, cv.width, cv.height);
+  }
+  resize(); addEventListener('resize', resize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+
+  const vsrc = `attribute vec2 aPos; attribute float aSize; attribute vec4 aCol;
+    uniform vec2 uRes; varying vec4 vCol;
+    void main(){ vCol = aCol; vec2 n = (aPos / uRes) * 2.0 - 1.0;
+      gl_Position = vec4(n.x, -n.y, 0.0, 1.0); gl_PointSize = aSize; }`;
+  const fsrc = `precision mediump float; varying vec4 vCol;
+    void main(){ float d = length(gl_PointCoord - .5);
+      gl_FragColor = vec4(vCol.rgb, vCol.a * smoothstep(.5, .15, d)); }`;
+  function sh(t, s){ const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, vsrc)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fsrc));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+  const MAX = 3400;
+  const pos = new Float32Array(MAX*2), size = new Float32Array(MAX), col = new Float32Array(MAX*4);
+  let count = 0;
+  function P(x, y, s, r, g, b, a){
+    if (count >= MAX) return;
+    pos[count*2] = x*dpr; pos[count*2+1] = y*dpr; size[count] = s*dpr;
+    col[count*4] = r; col[count*4+1] = g; col[count*4+2] = b; col[count*4+3] = a; count++;
+  }
+  function mkBuf(loc, comps){
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, comps === 2 ? pos : comps === 1 ? size : col, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, comps, gl.FLOAT, false, 0, 0);
+    return b;
+  }
+  const bPos = mkBuf(gl.getAttribLocation(prog,'aPos'), 2);
+  const bSize = mkBuf(gl.getAttribLocation(prog,'aSize'), 1);
+  const bCol = mkBuf(gl.getAttribLocation(prog,'aCol'), 4);
+  const uRes = gl.getUniformLocation(prog, 'uRes');
+
+  /* — scenes — */
+  const SCENES = [
+  { title: '01 / 04 — geoscience', chipT: 'GeoGPT · Zhejiang Lab', ac: [139,139,245],
+    cap1: 'GeoGPT — geoscience AI platform', cap2: 'planetary point cloud · survey sweep',
+    init(){ if (this.p) return; this.p = []; const n = 1250, ga = Math.PI*(3-Math.sqrt(5));
+      for (let i = 0; i < n; i++){ const y = 1-(i/(n-1))*2, r = Math.sqrt(Math.max(0,1-y*y)), th = ga*i;
+        this.p.push([Math.cos(th)*r, y, Math.sin(th)*r, ((th % (Math.PI*2)) + Math.PI*2) % (Math.PI*2)]); }
+      this.ring = []; for (let i = 0; i < 150; i++){ const a = i/150*Math.PI*2; this.ring.push([Math.cos(a), 0, Math.sin(a)]); } },
+    step(dt, t){ const cx = W/2, cy = H/2, R = Math.min(W,H)*0.37, rot = t*0.4, band = (t*0.65)%(Math.PI*2);
+      const cs = Math.cos(rot), sn = Math.sin(rot);
+      for (const q of this.p){ const x = q[0]*cs - q[2]*sn, z = q[0]*sn + q[2]*cs;
+        const pr = 2.3/(2.3+z), sx = cx + x*R*pr, sy = cy + q[1]*R*0.94*pr, li = (1-z)/2;
+        let d = Math.abs(q[3]-band); d = Math.min(d, Math.PI*2-d);
+        if (d < 0.22) P(sx, sy, 2.4, .95,.95,1, .35+li*.55);
+        else P(sx, sy, 1.2+li*1.2, .58,.6,.98, .1+li*.34); }
+      for (const q of this.ring){ const x = q[0]*cs - q[2]*sn, z = q[0]*sn + q[2]*cs, pr = 2.3/(2.3+z);
+        P(cx + x*R*1.25*pr, cy, 1.1, .75,.75,1, .06+(1-z)/2*.2); } } },
+
+  { title: '02 / 04 — medical imaging', chipT: 'SenseTime · 3D vis', ac: [95,214,224],
+    cap1: 'SenseTime — medical volume rendering', cap2: 'CT sweep · worker-parsed · GPU-cached',
+    init(){ if (this.p) return; this.p = [];
+      while (this.p.length < 1500){ const x = Math.random()*2-1, y = Math.random()*2-1, z = Math.random()*2-1;
+        if (x*x+y*y+z*z <= 1) this.p.push([x*0.85, y*1.12, z*0.72]); } },
+    step(dt, t){ const cx = W/2, cy = H/2, R = Math.min(W,H)*0.36, rot = t*0.28;
+      const cs = Math.cos(rot), sn = Math.sin(rot), scan = Math.sin(t*0.55)*0.95;
+      for (let i = 0; i < 64; i++) P(cx - R*1.15 + i/63*R*2.3, cy + scan*R, 1.2, .37,.84,.88, .15);
+      for (const q of this.p){ const x = q[0]*cs - q[2]*sn, z = q[0]*sn + q[2]*cs;
+        const pr = 2.4/(2.4+z), sx = cx + x*R*pr, sy = cy + q[1]*R*pr, li = (1-z)/2;
+        if (Math.abs(q[1]-scan) < 0.075) P(sx, sy, 2.6, .55,.95,1, .5+li*.4);
+        else P(sx, sy, 1.0+li*1.1, .45,.58,.95, .06+li*.26); } } },
+
+  { title: '03 / 04 — e-commerce scale', chipT: 'Pinduoduo · growth', ac: [240,177,83],
+    cap1: 'Pinduoduo — conversion funnel', cap2: 'traffic in · conversions out · fully instrumented',
+    hw(yn){ const topY = .06, neckY = .60, top = .34, neck = .07;
+      if (yn < neckY){ const k = Math.min(Math.max((yn-topY)/(neckY-topY), 0), 1); return top + (neck-top)*k; }
+      return neck; },
+    mk(top){ const y = top ? Math.random()*.9 : -0.03;
+      return { xn: (Math.random()*2-1)*.94, y, v: .1+Math.random()*.1, st: y > .60 ? 1 : 0, a: 1, x: 0, vx: 0 }; },
+    init(){ if (this.parts) return; this.parts = []; for (let i = 0; i < 230; i++) this.parts.push(this.mk(true)); },
+    step(dt, t){ const cx = W/2;
+      for (let i = 0; i <= 34; i++){ const yn = .06 + i/34*.54, hw = this.hw(yn)*W;
+        P(cx-hw, yn*H, 1.4, .62,.64,.98, .3); P(cx+hw, yn*H, 1.4, .62,.64,.98, .3); }
+      for (let i = 0; i <= 10; i++){ const yn = .60 + i/10*.34, hw = this.hw(yn)*W;
+        P(cx-hw, yn*H, 1.4, .62,.64,.98, .3); P(cx+hw, yn*H, 1.4, .62,.64,.98, .3); }
+      for (const p of this.parts){
+        p.y += p.v*dt*(p.st === 1 ? 2.1 : 1);
+        if (p.st === 2){ p.x += p.vx*dt; p.a -= dt*1.5; if (p.a <= 0) Object.assign(p, this.mk(false)); }
+        else {
+          if (p.st === 0 && p.y > .60){
+            if (Math.random() < .42){ p.st = 2; p.x = cx + Math.sign(p.xn)*this.hw(.6)*W; p.vx = Math.sign(p.xn)*W*.22; p.a = .8; }
+            else p.st = 1; }
+          if (p.y > .98) Object.assign(p, this.mk(false)); }
+        const sy = p.y*H;
+        if (p.st === 2) P(p.x, sy, 2, .8,.8,.92, p.a*.35);
+        else { const sx = cx + p.xn*this.hw(Math.max(p.y,.06))*W*.92 + Math.sin(t*3+p.xn*7)*2;
+          if (p.st === 1) P(sx, sy, 2.4, 1,.74,.35, .85);
+          else P(sx, sy, 1.6, .85,.85,1, .5); } } } },
+
+  { title: '04 / 04 — realtime fleet', chipT: 'DiDi · dispatch', ac: [245,140,80],
+    cap1: 'DiDi — realtime dispatch map', cap2: 'thousands of vehicles · clustered · WebGL',
+    init(){ if (this.cars) return; const NX = 6, NY = 4; this.NX = NX; this.NY = NY;
+      this.cars = []; for (let i = 0; i < 105; i++){ const hz = Math.random() < .5;
+        this.cars.push({ hz, lane: 1 + Math.floor(Math.random()*(hz ? NY : NX)), p: Math.random(),
+          sp: (.05+Math.random()*.11)*(Math.random() < .5 ? -1 : 1) }); }
+      this.pulses = []; this.lastP = 0; },
+    step(dt, t){ const NX = this.NX, NY = this.NY;
+      for (let i = 1; i <= NX; i++){ const x = i/(NX+1)*W; for (let y = 8; y < H; y += 14) P(x, y, .9, .58,.6,.98, .055); }
+      for (let j = 1; j <= NY; j++){ const y = j/(NY+1)*H; for (let x = 8; x < W; x += 14) P(x, y, .9, .58,.6,.98, .055); }
+      for (const c of this.cars){ c.p += c.sp*dt; if (c.p > 1) c.p -= 1; if (c.p < 0) c.p += 1;
+        const lx = c.hz ? c.p*W : c.lane/(NX+1)*W, ly = c.hz ? c.lane/(NY+1)*H : c.p*H;
+        for (let k = 0; k < 6; k++){ const off = -k*6*Math.sign(c.sp);
+          P(c.hz ? lx+off : lx, c.hz ? ly : ly+off, k === 0 ? 2.5 : 1.5, .96,.55,.3, k === 0 ? .9 : .4*(1-k/6)); } }
+      if (t - this.lastP > 1.7){ this.lastP = t; this.pulses.push({ x: (.15+Math.random()*.7)*W, y: (.15+Math.random()*.7)*H, r: 4 }); }
+      this.pulses = this.pulses.filter(p => p.r < 56);
+      for (const p of this.pulses){ p.r += 50*dt; const a = Math.max(0, 1-p.r/56)*.55;
+        for (let i = 0; i < 26; i++){ const an = i/26*Math.PI*2;
+          P(p.x+Math.cos(an)*p.r, p.y+Math.sin(an)*p.r, 1.4, .42,.88,.64, a); } } } }
+  ];
+
+  /* — scene switching — */
+  let active = Math.min(3, Math.max(0, parseInt(new URLSearchParams(location.search).get('scene')) || 0)), sceneT = 0, switching = false;
+  SCENES.forEach((s, i) => { const d = document.createElement('i'); d.onclick = () => { if (i !== active) switchTo(i); }; dotsEl.appendChild(d); });
+  function setLabels(i){ const s = SCENES[i], [r,g,b] = s.ac;
+    sTitle.textContent = s.title; chip.textContent = s.chipT;
+    chip.style.color = `rgb(${r},${g},${b})`;
+    chip.style.borderColor = `rgba(${r},${g},${b},.45)`;
+    chip.style.background = `rgba(${r},${g},${b},.1)`;
+    chip.style.boxShadow = `0 0 14px rgba(${r},${g},${b},.18)`;
+    cap.innerHTML = `<b>${s.cap1}</b><span>${s.cap2}</span>`;
+    [...dotsEl.children].forEach((d, k) => d.classList.toggle('on', k === i)); }
+  function switchTo(i){ if (switching) return; switching = true; cv.style.opacity = 0;
+    setTimeout(() => { active = i; sceneT = 0; SCENES[i].init(); setLabels(i); cv.style.opacity = 1; switching = false; }, 330); }
+  SCENES[active].init(); setLabels(active);
+
+  let last = performance.now(), fc = 0;
+  function frame(now){
+    const dt = Math.min((now - last)/1000, .05); last = now;
+    const t = now/1000;
+    count = 0; SCENES[active].step(dt, t);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bPos); gl.bufferSubData(gl.ARRAY_BUFFER, 0, pos.subarray(0, count*2));
+    gl.bindBuffer(gl.ARRAY_BUFFER, bSize); gl.bufferSubData(gl.ARRAY_BUFFER, 0, size.subarray(0, count));
+    gl.bindBuffer(gl.ARRAY_BUFFER, bCol); gl.bufferSubData(gl.ARRAY_BUFFER, 0, col.subarray(0, count*4));
+    gl.uniform2f(uRes, cv.width, cv.height);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, count);
+    if (++fc % 12 === 0) seqlog.innerHTML = `${count} pts<br>1 draw call`;
+    sceneT += dt; if (sceneT > 7 && !switching) switchTo((active+1) % SCENES.length);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
