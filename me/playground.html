@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inference Console — Streaming Playground</title>
+<style>
+  :root {
+    --bg: #0a0a0c; --bg-panel: #111114; --bg-elev: #17171b; --bg-hover: #1d1d22;
+    --border: #26262c; --border-strong: #33333b;
+    --text: #ededf0; --text-2: #9b9ba4; --text-3: #62626b;
+    --accent: #6e79d6; --accent-strong: #8b95ec; --accent-dim: rgba(110,121,214,.14);
+    --green: #4cc38a; --amber: #f0b153; --red: #eb6f6f;
+    --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 13.5px/1.6 -apple-system, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent-dim); }
+
+  .app { display: grid; grid-template-columns: 216px 1fr 300px; grid-template-rows: 52px 1fr; height: 100vh; }
+
+  /* ── Top bar ── */
+  header {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
+    padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--bg-panel);
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; letter-spacing: .2px; }
+  .logo-mark { width: 18px; height: 18px; border-radius: 5px;
+    background: linear-gradient(135deg, var(--accent), #a86ee0); box-shadow: 0 0 12px rgba(110,121,214,.5); }
+  .crumb { color: var(--text-3); font-size: 13px; }
+  .crumb b { color: var(--text-2); font-weight: 500; }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 99px; padding: 3px 10px; background: var(--bg-elev);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); transition: all .3s; }
+  .dot.off { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg,#3b4a8f,#6e79d6);
+    display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+
+  /* ── Sidebar ── */
+  nav { border-right: 1px solid var(--border); background: var(--bg-panel); padding: 12px 8px; }
+  .nav-group { margin-bottom: 18px; }
+  .nav-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; padding: 4px 10px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 6px;
+    color: var(--text-2); cursor: pointer; font-size: 13px; transition: background .12s, color .12s;
+  }
+  .nav-item:hover { background: var(--bg-hover); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent-strong); font-weight: 500; }
+  .nav-item svg { width: 15px; height: 15px; opacity: .85; }
+  .nav-badge { margin-left: auto; font-size: 10.5px; background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 99px; padding: 0 6px; color: var(--text-3); }
+
+  /* ── Main ── */
+  main { display: flex; flex-direction: column; min-width: 0; }
+  .toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field label { font-size: 11px; color: var(--text-3); }
+  select, .param {
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 5px 9px; font-size: 12.5px; outline: none; transition: border .15s;
+  }
+  select:hover, select:focus { border-color: var(--border-strong); }
+  .spacer { flex: 1; }
+  .uid { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+  .uid b { color: var(--text-2); font-weight: 500; }
+
+  .chat { flex: 1; overflow-y: auto; padding: 24px 20px 8px; scroll-behavior: smooth; }
+  .chat::-webkit-scrollbar { width: 8px; } .chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .msg { max-width: 720px; margin: 0 auto 18px; }
+  .msg .who { font-size: 11px; color: var(--text-3); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .msg.user .bubble { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .msg.ai .bubble { padding: 2px 0 0; }
+  .bubble h3 { font-size: 14px; margin: 12px 0 6px; }
+  .bubble p { margin: 6px 0; color: #d4d4da; }
+  .bubble ul { margin: 6px 0 6px 18px; color: #d4d4da; }
+  .bubble li { margin: 3px 0; }
+  .bubble code { font-family: var(--mono); font-size: 12px; background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 5px; color: var(--accent-strong); }
+  .bubble pre { background: #0d0d10; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px; margin: 10px 0; overflow-x: auto; }
+  .bubble pre code { background: none; border: none; padding: 0; color: #c9d1e0; font-size: 12px; line-height: 1.7; }
+  .cursor { display: inline-block; width: 7px; height: 15px; background: var(--accent-strong);
+    vertical-align: -2px; margin-left: 2px; border-radius: 1px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .banner {
+    max-width: 720px; margin: 0 auto 14px; display: none; align-items: center; gap: 9px;
+    border: 1px solid rgba(240,177,83,.35); background: rgba(240,177,83,.08); color: var(--amber);
+    border-radius: var(--radius); padding: 9px 13px; font-size: 12.5px;
+  }
+  .banner.show { display: flex; animation: slidein .25s ease; }
+  .banner.ok { border-color: rgba(76,195,138,.35); background: rgba(76,195,138,.08); color: var(--green); }
+  @keyframes slidein { from { opacity: 0; transform: translateY(-4px); } }
+  .spinner { width: 12px; height: 12px; border: 2px solid rgba(240,177,83,.3); border-top-color: var(--amber);
+    border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .composer { padding: 14px 20px 18px; border-top: 1px solid var(--border); }
+  .composer-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 9px; }
+  .composer input {
+    flex: 1; background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); padding: 10px 14px; font-size: 13.5px; outline: none; transition: border .15s, box-shadow .15s;
+  }
+  .composer input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  button {
+    background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
+    padding: 0 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: filter .15s, transform .05s;
+  }
+  button:hover { filter: brightness(1.12); } button:active { transform: translateY(1px); }
+  button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  button.ghost { background: var(--bg-elev); color: var(--text-2); border: 1px solid var(--border); }
+  button.ghost:hover { color: var(--text); border-color: var(--border-strong); }
+  button.danger-ghost { background: transparent; color: var(--amber); border: 1px solid rgba(240,177,83,.35); }
+
+  /* ── Right panel ── */
+  aside { border-left: 1px solid var(--border); background: var(--bg-panel); display: flex; flex-direction: column; min-height: 0; }
+  .panel { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .panel h4 { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metric { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 11px; }
+  .metric .v { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--text); transition: color .2s; }
+  .metric .k { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+  .metric .v.pulse { color: var(--accent-strong); }
+  .inspector { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .frames { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: var(--mono); font-size: 11px; }
+  .frames::-webkit-scrollbar { width: 6px; } .frames::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .frame { display: flex; gap: 8px; padding: 2.5px 4px; border-radius: 4px; color: var(--text-3); animation: fin .2s ease; }
+  .frame:hover { background: var(--bg-hover); }
+  @keyframes fin { from { opacity: 0; transform: translateX(4px); } }
+  .frame .seq { color: var(--text-3); width: 52px; flex-shrink: 0; }
+  .frame .type { width: 68px; flex-shrink: 0; }
+  .frame .type.delta { color: var(--accent-strong); }
+  .frame .type.ctrl { color: var(--green); }
+  .frame .type.err { color: var(--amber); }
+  .frame .payload { color: #8f8f98; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  footer { padding: 8px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3);
+    display: flex; justify-content: space-between; }
+  footer a { color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><div class="logo-mark"></div>Inference Console</div>
+    <span class="crumb">/ <b>Playground</b> / streaming</span>
+    <div class="top-right">
+      <div class="status-pill"><div class="dot" id="connDot"></div><span id="connText">Connected · SSE</span></div>
+      <div class="avatar">ZT</div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-group">
+      <div class="nav-label">Platform</div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h2l1.5-4 3 8L11 8h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Playground</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 6.5h5M5.5 9.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Endpoints <span class="nav-badge">3</span></div>
+      <div class="nav-item">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 13V7M8 13V3M13 13v-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Usage</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5.5V8l1.8 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Logs</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Resources</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M4 2.5h6.5L13 5v8.5H4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Docs</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6 11l-3-3 3-3M10 5l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        SDK</div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="toolbar">
+      <div class="field"><label>Model</label>
+        <select id="model"><option>qwen-max</option><option>deepseek-v3</option><option>gpt-4o</option></select></div>
+      <div class="field"><label>Temperature</label>
+        <select class="param"><option>0.2</option><option selected>0.7</option><option>1.0</option></select></div>
+      <div class="field"><label>Stream</label>
+        <select class="param"><option selected>incremental</option><option>full</option></select></div>
+      <div class="spacer"></div>
+      <span class="uid">uniqueId: <b id="uid">—</b></span>
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="banner" id="banner"></div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <input id="input" placeholder="发送一条消息,观察右侧协议帧…" value="如何设计一个支持断线重连的流式协议?" />
+        <button id="send">发送</button>
+        <button class="danger-ghost" id="drop" disabled>模拟断线</button>
+      </div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="panel">
+      <h4>Usage</h4>
+      <div class="metrics">
+        <div class="metric"><div class="v" id="mIn">0</div><div class="k">input tokens</div></div>
+        <div class="metric"><div class="v" id="mOut">0</div><div class="k">output tokens</div></div>
+        <div class="metric"><div class="v" id="mTtft">—</div><div class="k">TTFT</div></div>
+        <div class="metric"><div class="v" id="mCost">$0.0000</div><div class="k">est. cost</div></div>
+      </div>
+    </div>
+    <div class="panel inspector" style="flex:1; border-bottom:none;">
+      <h4>Protocol Inspector</h4>
+      <div class="frames" id="frames"></div>
+    </div>
+    <footer><span>demo · client-simulated stream</span><span>built with Claude Code</span></footer>
+  </aside>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const chat = $('chat'), frames = $('frames'), banner = $('banner');
+
+const ANSWER = [
+  {t:'h3', c:'核心思路'},
+  {t:'p', c:'把流式从「临时管道」升级为「可恢复的状态机」。关键是三个字段:**uniqueId** 标识一次生成任务,**seq** 递增序号保证有序,**isAll** 区分全量与增量帧。'},
+  {t:'h3', c:'协议层'},
+  {t:'ul', c:['每个 SSE 帧携带 `uniqueId` + `seq`,前端按序拼接,乱序帧丢弃并请求补发','正文走增量模式省流量;需要整体刷新的块走全量替换','`end` 帧标记生成完成,落终态']},
+  {t:'h3', c:'状态层'},
+  {t:'p', c:'服务端把已生成的 chunk 持久化(如 Redis)。客户端断线后无论间隔多久,携带相同 `uniqueId` 调用 reconnect:'},
+  {t:'pre', c:'GET /v1/stream/reconnect?uniqueId=a3f9&lastSeq=42\\n\\n// 服务端返回 seq 43 起的全部增量\\n// 客户端清空缓冲区 → 续拼 → 切回增量模式'},
+  {t:'h3', c:'容错与幂等'},
+  {t:'ul', c:['用户停止时先调 stop 让服务端保存现场,前端 abort 只做兜底','相同 uniqueId 的重试识别为同一任务——**重连多少次都不会重复推理**','异常中断率、恢复成功率接入监控告警']},
+  {t:'p', c:'这套协议的价值:弱网下体验连续,且省掉重复生成的推理成本——对按 token 计费的平台,这是真金白银。'}
+];
+
+let seq = 0, uid = null, streaming = false, dropped = false;
+let tokens = { in: 0, out: 0 }, t0 = 0, ttftDone = false;
+let queue = [], qi = 0, timer = null, aiBubble = null, cursorEl = null;
+
+function frame(type, payload) {
+  const el = document.createElement('div');
+  el.className = 'frame';
+  el.innerHTML = `<span class="seq">${type==='delta' ? 'seq '+String(seq).padStart(3,'0') : '—'}</span><span class="type ${type==='delta'?'delta':type==='err'?'err':'ctrl'}">${type}</span><span class="payload">${payload}</span>`;
+  frames.appendChild(el);
+  frames.scrollTop = frames.scrollHeight;
+}
+function pulse(id, v) { const el=$(id); el.textContent=v; el.classList.add('pulse'); setTimeout(()=>el.classList.remove('pulse'),180); }
+function setConn(ok, text) { $('connDot').classList.toggle('off', !ok); $('connText').textContent = text; }
+function showBanner(html, ok=false) { banner.innerHTML = html; banner.className = 'banner show'+(ok?' ok':''); }
+function hideBanner() { banner.className = 'banner'; }
+
+function renderBlock(b) {
+  if (b.t==='h3') { const h=document.createElement('h3'); h.textContent=b.c; return h; }
+  if (b.t==='pre') { const p=document.createElement('pre'); const c=document.createElement('code'); p.appendChild(c); return p; }
+  if (b.t==='ul') { const u=document.createElement('ul'); return u; }
+  const p=document.createElement('p'); return p;
+}
+function inline(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+
+// 把回答切成 (blockIndex, itemIndex, charChunk) 的 token 队列
+function buildQueue() {
+  queue = [];
+  ANSWER.forEach((b, bi) => {
+    queue.push({op:'block', bi});
+    if (b.t==='ul') {
+      b.c.forEach((li, lii) => {
+        queue.push({op:'li', bi});
+        for (let i=0; i<li.length; i+=3) queue.push({op:'text', bi, chunk: li.slice(i,i+3)});
+      });
+    } else {
+      const text = b.t==='pre' ? b.c.replace(/\\n/g,'\n') : b.c;
+      for (let i=0; i<text.length; i+=3) queue.push({op:'text', bi, chunk: text.slice(i,i+3)});
+    }
+  });
+  qi = 0;
+}
+
+let curEls = {}, curLi = null;
+function step() {
+  if (qi >= queue.length) { finish(); return; }
+  if (dropped) return;
+  const item = queue[qi++]; seq++;
+  if (!ttftDone) { ttftDone = true; pulse('mTtft', ((performance.now()-t0)/1000).toFixed(2)+'s'); }
+
+  if (item.op==='block') {
+    const el = renderBlock(ANSWER[item.bi]);
+    curEls[item.bi] = el; curLi = null;
+    aiBubble.insertBefore(el, cursorEl);
+    frame('delta', `{type:"block", t:"${ANSWER[item.bi].t}"}`);
+  } else if (item.op==='li') {
+    curLi = document.createElement('li');
+    curLi.__raw = '';
+    curEls[item.bi].appendChild(curLi);
+    frame('delta', '{type:"li"}');
+  } else {
+    const b = ANSWER[item.bi];
+    if (b.t==='pre') {
+      const code = curEls[item.bi].querySelector('code');
+      code.textContent += item.chunk;
+    } else if (curLi && b.t==='ul') {
+      curLi.__raw += item.chunk; curLi.innerHTML = inline(curLi.__raw);
+    } else {
+      const el = curEls[item.bi];
+      el.__raw = (el.__raw||'') + item.chunk; el.innerHTML = inline(el.__raw);
+    }
+    tokens.out++;
+    if (tokens.out % 4 === 0) pulse('mOut', tokens.out);
+    pulseCost();
+    frame('delta', `{content:"${item.chunk.replace(/"/g,'')}"}`);
+  }
+  chat.scrollTop = chat.scrollHeight;
+  timer = setTimeout(step, 24 + Math.random()*30);
+}
+function pulseCost() { $('mCost').textContent = '$' + ((tokens.in*0.4 + tokens.out*1.2)/1e6*7.3).toFixed(5); }
+
+function startStream() {
+  if (streaming) return;
+  const text = $('input').value.trim(); if (!text) return;
+  streaming = true; dropped = false; seq = 0; ttftDone = false;
+  uid = Math.random().toString(16).slice(2,6) + '-' + Math.random().toString(16).slice(2,6);
+  $('uid').textContent = uid;
+  $('send').disabled = true; $('drop').disabled = false;
+  tokens.in += Math.round(text.length * .6); pulse('mIn', tokens.in);
+  t0 = performance.now();
+
+  const um = document.createElement('div');
+  um.className = 'msg user';
+  um.innerHTML = `<div class="who">You</div><div class="bubble">${inline(text)}</div>`;
+  chat.appendChild(um);
+
+  const am = document.createElement('div');
+  am.className = 'msg ai';
+  am.innerHTML = `<div class="who"><span style="color:var(--accent-strong)">●</span> ${$('model').value}</div>`;
+  aiBubble = document.createElement('div'); aiBubble.className = 'bubble';
+  cursorEl = document.createElement('span'); cursorEl.className = 'cursor';
+  aiBubble.appendChild(cursorEl);
+  am.appendChild(aiBubble);
+  chat.appendChild(am);
+  chat.scrollTop = chat.scrollHeight;
+
+  frame('ctrl', `POST /v1/chat  {uniqueId:"${uid}", stream:true}`);
+  frame('ctrl', 'SSE open · 200');
+  curEls = {}; curLi = null;
+  buildQueue();
+  step();
+}
+
+function drop() {
+  if (!streaming || dropped) return;
+  dropped = true; clearTimeout(timer);
+  setConn(false, 'Disconnected');
+  frame('err', 'connection lost (network drop)');
+  showBanner(`<div class="spinner"></div> 连接中断 — 已保存现场,3 秒后携带 <b style="font-family:var(--mono)">uniqueId:${uid} · lastSeq:${seq}</b> 重连…`);
+  $('drop').disabled = true;
+  setTimeout(reconnect, 3000);
+}
+function reconnect() {
+  frame('ctrl', `GET /v1/stream/reconnect?uniqueId=${uid}&lastSeq=${seq}`);
+  frame('ctrl', `resume from seq ${seq+1} · dedup ok`);
+  setConn(true, 'Connected · SSE');
+  showBanner(`已恢复 — 从 seq ${seq+1} 续传,未产生重复推理`, true);
+  setTimeout(hideBanner, 2600);
+  dropped = false; $('drop').disabled = false;
+  step();
+}
+function finish() {
+  streaming = false;
+  frame('ctrl', `event: end · ${tokens.out} tokens`);
+  if (cursorEl) cursorEl.remove();
+  $('send').disabled = false; $('drop').disabled = true;
+  pulse('mOut', tokens.out);
+}
+
+$('send').addEventListener('click', startStream);
+$('input').addEventListener('keydown', e => { if (e.key==='Enter') startStream(); });
+$('drop').addEventListener('click', drop);
+</script>
+</body>
+</html>
