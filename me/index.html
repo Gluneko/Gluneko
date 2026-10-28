@@ -204,9 +204,9 @@
   <h2 class="lede rise">Small, runnable, open:<br>the hard parts of an AI product, each as a minimal implementation.</h2>
   <div class="cards">
     <div class="card rise"><span class="num">01</span>
-      <h3>Stream Chat</h3><small>streaming protocol · reconnection · tool calls</small>
-      <p>An AI chat surface with a hand-written frame protocol (<b>uniqueId + seq + isAll</b>), exponential-backoff reconnection, refresh recovery from the last seq, two-level stop, human-confirmed tool calls and rAF-batched Markdown rendering. Pull the network plug or refresh mid-answer — it continues.</p>
-      <p><a class="btn ghost" href="chat/">Open demo ↗</a> <a class="btn ghost" href="https://github.com/Gluneko/stream-chat-demo">Source</a></p></div>
+      <h3>Stream Chat</h3><small>streaming protocol · reconnection · tool calls · React and Vue 3 builds</small>
+      <p>An AI chat surface with a hand-written frame protocol (<b>uniqueId + seq + isAll</b>), exponential-backoff reconnection, refresh recovery from the last seq, two-level stop, human-confirmed tool calls and rAF-batched Markdown rendering. Pull the network plug or refresh mid-answer — it continues. The protocol, state machine and transports are shared by a React build and a Vue 3 + Pinia build.</p>
+      <p><a class="btn ghost" href="chat/">React demo ↗</a> <a class="btn ghost" href="chat-vue/">Vue 3 demo ↗</a> <a class="btn ghost" href="https://github.com/Gluneko/stream-chat-demo">Source</a> <a class="btn ghost" href="https://github.com/Gluneko/stream-chat-vue">Vue source</a></p></div>
     <div class="card rise"><span class="num">02</span>
       <h3>Collab Notes</h3><small>Yjs CRDT · TipTap · own sync server</small>
       <p>Collaborative editor with a hand-written WebSocket sync server (sync steps, awareness, append-only update log + snapshots, read/write auth), offline merge via IndexedDB, origin-scoped undo, version snapshots, and AI continuation streamed into the document as transactions. Plus a 120-line sequence CRDT to show why concurrent inserts converge.</p>
